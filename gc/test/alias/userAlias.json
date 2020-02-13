@@ -1,0 +1,26 @@
+﻿{
+  "desc": "用户别名",
+  "props": [
+    {
+      "name": "userId",
+      "desc": "用户Id",
+      "type": "int",
+      "key": true,
+      "fkey": {
+        "main": "user",
+        "key": "id"
+      }
+    },
+    {
+      "name": "name",
+      "desc": "用户名称",
+      "size": 64
+    },
+    {
+      "name": "roleId",
+      "desc": "角色Id",
+      "type": "int",
+      "key": true
+    }
+  ]
+}

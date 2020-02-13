@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "gc": {
+      "commandName": "Project",
+      "commandLineArgs": "--f D:\\Source\\Repos\\gc\\gc\\test\\gc.json"
+    }
+  }
+}

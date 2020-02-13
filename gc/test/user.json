@@ -1,0 +1,31 @@
+﻿{
+  "name": "User",
+  "desc": "用户实体",
+  "using": [ ],
+  "namespace": "Yd",
+  "base": [],
+  "props": [
+    {
+      "name": "id",
+      "desc": "唯一Id",
+      "type": "int",
+      "identity": true
+    },
+    {
+      "name": "userName",
+      "desc": "名称",
+      "size": 64,
+      "unique": true
+    },
+    {
+      "name": "realName",
+      "desc": "真实姓名",
+      "size": 64
+    },
+    {
+      "name": "password",
+      "desc": "真实姓名",
+      "size": 128
+    }
+  ]
+}
