@@ -1,4 +1,6 @@
-﻿namespace gc
+﻿using System;
+
+namespace gc
 {
     /// <summary>
     /// 扩展方法类。

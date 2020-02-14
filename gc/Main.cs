@@ -32,11 +32,10 @@ namespace gc
             var configFile = new FileInfo(file);
             if (!configFile.Exists)
             {
-                Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("未找到“{0}”文件！", configFile.FullName);
-                Console.ResetColor();
+                WriteLine(ConsoleColor.DarkRed, "未找到“{0}”文件！", configFile.FullName);
                 return;
             }
+            WriteLine(ConsoleColor.DarkGreen, "载入“{0}”文件！", configFile.FullName);
             var project = Load(configFile);
             if (project == null)
                 return;
@@ -47,6 +46,7 @@ namespace gc
                 dir = Path.Combine(configFile.DirectoryName, dir);
             CreatePaths(project, dir, out var netCore, out var typeScript);
             Write(project, netCore, typeScript);
+            WriteLine(ConsoleColor.DarkGreen, "恭喜你，你已经完成了操作，请到“{0}”中进行查看！", dir);
         }
 
         private void CreatePaths(Project project, string path, out string netCore, out string typeScript)
@@ -94,6 +94,7 @@ namespace gc
         {
             foreach (var file in files)
             {
+                WriteLine(ConsoleColor.DarkGreen, "加载类文件：{0}", file.FullName);
                 var @class = Read<Class>(file.FullName);
                 project.Classes.Add(@class);
                 if (@class.Namespace == null)
@@ -154,9 +155,21 @@ namespace gc
 
         private void WriteFile(string path, string code)
         {
+            WriteLine(ConsoleColor.DarkGreen, "写入代码文件：{0}", path);
             using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write))
             using (var sw = new StreamWriter(fs, Encoding.UTF8))
                 sw.WriteLine(code);
+        }
+
+        /// <summary>
+        /// 输出控制台。
+        /// </summary>
+        public static void WriteLine(ConsoleColor color, string message, params object[] args)
+        {
+            message = string.Format(message, args);
+            Console.ForegroundColor = color;
+            Console.WriteLine(message);
+            Console.ResetColor();
         }
     }
 }
