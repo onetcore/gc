@@ -73,7 +73,7 @@
 4. size: 长度大小，主要用于数据库迁移中使用，`string`类型如果没有配置将使用`nvarchar(max)`；
 5. map: 默认为`true`，如果设置为`false`将不迁移到数据库中；
 6. update: 默认为`true`，如果设置为`false`更新实体的时候将忽略当前属性；
-7. scope: 默认为`public`，其他配置将不迁移到数据库中；
+7. jsonType: JSON客户端类型。
 8. identity: 自增长属性；
 9. key: 主键；
 10. unique: 唯一键；
