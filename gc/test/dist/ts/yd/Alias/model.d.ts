@@ -1,4 +1,7 @@
-﻿export interface UserAliasModel {
+﻿/**
+ * 用户别名。
+ */
+export interface UserAliasModel {
     /**
      * 用户Id。
      */

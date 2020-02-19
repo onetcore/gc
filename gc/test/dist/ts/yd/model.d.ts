@@ -1,4 +1,7 @@
-﻿export interface UserModel {
+﻿/**
+ * 用户实体。
+ */
+export interface UserModel {
     /**
      * 唯一Id。
      */

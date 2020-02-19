@@ -103,12 +103,16 @@ namespace gc
                     {
                         var names = file.DirectoryName?.Substring(basePathStart).Trim('/', '\\')
                             .Split(new[] { '/', '\\', '.' })
+                            .Where(x => !string.IsNullOrEmpty(x))
                             .Select(x => x.NormalizedName());
-                        @namespace = string.Join(".", names);
+                        if (names.Any())
+                            @namespace = $"{project.Namespace}.{string.Join(".", names)}";
+                        else
+                            @namespace = project.Namespace;
                         _namespaces[file.DirectoryName] = @namespace;
                     }
 
-                    @class.Namespace = $"{project.Namespace}.{@namespace}";
+                    @class.Namespace = @namespace;
                 }
 
                 @class.Name = (@class.Name ?? Path.GetFileNameWithoutExtension(file.Name)).NormalizedName();
@@ -151,6 +155,12 @@ namespace gc
             WriteFile(path, projectClass.ToTypeScriptString());
             path = Path.Combine(typescript, "service.ts");
             WriteFile(path, controller.ToTypeScriptString());
+            path = Path.Combine(typescript, "create.tsx");
+            WriteFile(path, projectClass.ToTypeScriptFormString());
+            path = Path.Combine(typescript, "update.tsx");
+            WriteFile(path, projectClass.ToTypeScriptFormString(false));
+            path = Path.Combine(typescript, "index.tsx");
+            WriteFile(path, projectClass.ToTypeScriptTableString());
         }
 
         private void WriteFile(string path, string code)
