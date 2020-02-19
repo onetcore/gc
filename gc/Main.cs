@@ -9,17 +9,10 @@ namespace gc
 {
     class Main
     {
-        private readonly IDictionary<string, string> _args = new Dictionary<string, string>();
-        public Main(string[] args)
+        private readonly IDictionary<string, string> _args;
+        public Main(IDictionary<string, string> args)
         {
-            for (var i = 0; i < args.Length; i++)
-            {
-                var arg = args[i];
-                if (arg.StartsWith("--") && i < args.Length - 1)
-                    _args[arg] = args[++i];
-                else
-                    _args[arg] = null;
-            }
+            _args = args;
         }
 
         private const string Entry = "gc.json";
