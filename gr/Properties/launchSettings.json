@@ -1,7 +1,8 @@
 {
   "profiles": {
     "gr": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "--dir D:\\Source\\Ydsms"
     }
   }
 }
