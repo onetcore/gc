@@ -54,38 +54,6 @@ namespace gr
             var name = $".{sln}.";
             Success("建立项目为：{0}，路径：{1}", sln, rootDir.FullName);
             ParseDirectory(rootDir, sln, name);
-            //var directories = new List<LevelDirectoryInfo>();
-            //directories.Add(new LevelDirectoryInfo { Info = rootDir });
-            //Load(rootDir, directories);
-            //directories = directories.Distinct(new DirectoryNameComparer())
-            //    .OrderByDescending(x => x.Level)
-            //    .ToList();
-            //Success("检索到{0}个文件夹！", directories.Count);
-
-            //foreach (var levelDirectory in directories)
-            //{
-            //    var directory = levelDirectory.Info;
-            //    Success("检查文件夹：{0}", directory.FullName.Replace(rootDir.FullName, string.Empty, StringComparison.OrdinalIgnoreCase));
-            //    var files = directory.GetFiles("*.*", SearchOption.TopDirectoryOnly);
-            //    foreach (var file in files)
-            //    {
-            //        if (file.Name.StartsWith("."))
-            //            continue;
-            //        var newfileName = GetNewName(file.Name, sln, name);
-            //        var fileName = Path.Combine(file.DirectoryName, newfileName);
-            //        if (!file.Name.Equals(newfileName, StringComparison.OrdinalIgnoreCase))
-            //        {
-            //            Success("将文件{0}名称修改：{1}", file.Name, newfileName);
-            //            file.MoveTo(fileName);
-            //        }
-
-            //        Log(ConsoleColor.Green, "   {0}", newfileName);
-            //        ReplaceFile(fileName, sln);
-            //    }
-            //    var newDirectoryName = GetNewName(directory.Name, sln, name);
-            //    if (!directory.Name.Equals(newDirectoryName, StringComparison.OrdinalIgnoreCase))
-            //        directory.MoveTo(Path.Combine(directory.Parent?.FullName, newDirectoryName));
-            //}
             Success("完成转换！");
         }
 
@@ -117,50 +85,6 @@ namespace gr
 
         private const string Src = "Yd";
         private const string SrcReplacement = ".Yd.";
-
-        private class DirectoryNameComparer : IEqualityComparer<LevelDirectoryInfo>
-        {
-            /// <summary>Determines whether the specified objects are equal.</summary>
-            /// <param name="x">The first object of type <paramref name="T" /> to compare.</param>
-            /// <param name="y">The second object of type <paramref name="T" /> to compare.</param>
-            /// <returns>
-            /// <see langword="true" /> if the specified objects are equal; otherwise, <see langword="false" />.</returns>
-            public bool Equals(LevelDirectoryInfo x, LevelDirectoryInfo y)
-            {
-                return x?.Info.FullName.Equals(y?.Info.FullName, StringComparison.OrdinalIgnoreCase) ?? false;
-            }
-
-            /// <summary>Returns a hash code for the specified object.</summary>
-            /// <param name="obj">The <see cref="T:System.Object" /> for which a hash code is to be returned.</param>
-            /// <returns>A hash code for the specified object.</returns>
-            /// <exception cref="T:System.ArgumentNullException">The type of <paramref name="obj" /> is a reference type and <paramref name="obj" /> is <see langword="null" />.</exception>
-            public int GetHashCode(LevelDirectoryInfo obj)
-            {
-                return obj.Info.FullName.ToLower().GetHashCode();
-            }
-        }
-
-        private class LevelDirectoryInfo
-        {
-            public int Level { get; set; }
-
-            public DirectoryInfo Info { get; set; }
-        }
-
-        static void Load(DirectoryInfo current, List<LevelDirectoryInfo> directories, int level = 1)
-        {
-            var dirs = current.GetDirectories("*", SearchOption.TopDirectoryOnly)
-                .Where(x => !x.Name.StartsWith("."))
-                .Where(x => x.Name != "bin" && x.Name != "obj" && x.Name != "setup");
-            if (dirs.Any())
-            {
-                foreach (var sub in dirs)
-                {
-                    directories.Add(new LevelDirectoryInfo { Info = sub, Level = level });
-                    Load(sub, directories, level++);
-                }
-            }
-        }
 
         static void ParseDirectory(DirectoryInfo current, string sln, string name)
         {

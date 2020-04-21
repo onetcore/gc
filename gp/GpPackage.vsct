@@ -70,7 +70,7 @@
       </Button>
       <Button guid="guidGpPackageCmdSet" id="TsId" priority="0x0100" type="Button">
         <Parent guid="guidGpPackageCmdSet" id="MyMenuGroup" />
-        <Icon guid="guidImages" id="bmpPicArrows" />
+        <Icon guid="guidImages" id="bmpPic3" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>生成客户端TS脚本</ButtonText>
@@ -85,7 +85,7 @@
             bitmap strip containing the bitmaps and then there are the numeric ids of the elements used
             inside a button definition. An important aspect of this declaration is that the element id
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
-      <Bitmap guid="guidImages" href="Resources\GpCommand.png" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows, bmpPicStrikethrough" />
+      <Bitmap guid="guidImages" href="Resources\GpCommand.png" usedList="bmpPic1, bmpPic2, bmpPic3, bmpPicX, bmpPicArrows, bmpPicStrikethrough" />
     </Bitmaps>
   </Commands>
 
@@ -104,7 +104,7 @@
     <GuidSymbol name="guidImages" value="{45e5cdaa-e553-4c36-a0d8-8d859905cd9b}">
       <IDSymbol name="bmpPic1" value="1" />
       <IDSymbol name="bmpPic2" value="2" />
-      <IDSymbol name="bmpPicSearch" value="3" />
+      <IDSymbol name="bmpPic3" value="3" />
       <IDSymbol name="bmpPicX" value="4" />
       <IDSymbol name="bmpPicArrows" value="5" />
       <IDSymbol name="bmpPicStrikethrough" value="6" />

@@ -107,6 +107,8 @@ namespace gp
         }
 
         private const string Public = "public ";
+        private const string PublicVirtual = "public virtual ";
+        private const string PublicOverride = "public override ";
         private void Parse(string code, StringReader reader, Class current)
         {
             switch (code[0])
@@ -120,9 +122,8 @@ namespace gp
             }
             if (code.StartsWith(Using))
                 Usings.Add(code);
-            else if (code.StartsWith(Public))
+            else if (SubstringStartsWith(ref code, Public) || SubstringStartsWith(ref code, PublicVirtual) || SubstringStartsWith(ref code, PublicOverride))
             {
-                code = code.Substring(Public.Length);
                 var type = ReadName(code);
                 code = code.Substring(type.Length + 1).Trim();
                 var name = ReadName(code);
@@ -156,6 +157,17 @@ namespace gp
                 }
             }
 
+        }
+
+        private bool SubstringStartsWith(ref string code, string starts)
+        {
+            if (code.StartsWith(starts))
+            {
+                code = code.Substring(starts.Length).Trim();
+                return true;
+            }
+
+            return false;
         }
 
         private string ReadName(string code)
