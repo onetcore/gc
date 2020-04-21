@@ -44,6 +44,9 @@ namespace gr
                 Error("文件夹“{0}”不存在！", root);
                 return;
             }
+            //如果放在setup目录则上一级目录就是为项目目录
+            if (rootDir.Name == "setup")
+                rootDir = rootDir.Parent;
             if (!_args.TryGetValue("sln", out var sln))
                 sln = rootDir.Name;
             if (sln.Length > 1)
