@@ -95,7 +95,7 @@ namespace gr
             ParseFiles(current, sln, name);
             var directories = current.GetDirectories("*", SearchOption.TopDirectoryOnly)
                 .Where(x => !x.Name.StartsWith("."))
-                .Where(x => x.Name != "bin" && x.Name != "obj" && x.Name != "setup")
+                .Where(x => x.Name != "bin" && x.Name != "obj" && x.Name != "setup" && x.Name != "wwwroot")
                 .ToList();
             foreach (var directory in directories)
             {
@@ -111,7 +111,9 @@ namespace gr
             var files = current.GetFiles("*.*", SearchOption.TopDirectoryOnly);
             foreach (var file in files)
             {
-                if (file.Name.StartsWith("."))
+                if (file.Name.StartsWith(".") ||
+                    file.FullName.IndexOf("/wwwroot/", StringComparison.OrdinalIgnoreCase) != -1 ||
+                    file.FullName.IndexOf("\\wwwroot\\", StringComparison.OrdinalIgnoreCase) != -1)
                     continue;
                 var newfileName = GetNewName(file.Name, sln, name);
                 var fileName = Path.Combine(file.DirectoryName, newfileName);
