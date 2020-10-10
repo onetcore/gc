@@ -20,6 +20,7 @@ namespace gr
                     _args[arg] = null;
             }
 
+
             Execute();
         }
 
@@ -46,7 +47,20 @@ namespace gr
             }
             //如果放在setup目录则上一级目录就是为项目目录
             if (rootDir.Name == "setup")
+            {
                 rootDir = rootDir.Parent;
+                var src = rootDir.GetFiles(".sln", SearchOption.TopDirectoryOnly);
+                if (src.Length == 1)
+                {
+                    var replacement = src.Single().Name.Replace(".sln", string.Empty, StringComparison.OrdinalIgnoreCase);
+                    if (replacement.Length > 1)
+                        replacement = char.ToUpper(replacement[0]) + replacement.Substring(1);
+                    else
+                        replacement = char.ToUpper(replacement[0]).ToString();
+                    Src = replacement;
+                    SrcReplacement = $".{replacement}.";
+                }
+            }
             if (!_args.TryGetValue("sln", out var sln))
                 sln = rootDir.Name;
             if (sln.Length > 1)
@@ -86,8 +100,8 @@ namespace gr
                 sw.Write(code);
         }
 
-        private const string Src = "Yd";
-        private const string SrcReplacement = ".Yd.";
+        private static string Src = "Yd";
+        private static string SrcReplacement = ".Yd.";
 
         static void ParseDirectory(DirectoryInfo current, string sln, string name)
         {
