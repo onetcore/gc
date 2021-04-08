@@ -177,7 +177,8 @@ namespace gp.Transfers
                 builder.AppendFormat("        /// 初始化类<see cref=\"{0}\"/>。", entity.Name).AppendLine();
                 builder.AppendLine("        /// </summary>");
                 builder.AppendLine("        /// <param name=\"context\">数据库操作接口实例。</param>");
-                builder.AppendLine("        /// <param name=\"cache\">缓存接口。</param>");
+                if (entityType == EntityType.GroupBase)
+                    builder.AppendLine("        /// <param name=\"cache\">缓存接口。</param>");
                 switch (entityType)
                 {
                     case EntityType.GroupBase:
