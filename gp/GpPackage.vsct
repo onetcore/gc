@@ -65,17 +65,17 @@
         <Icon guid="guidImages" id="bmpPic2" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
-          <ButtonText>生成控制器类</ButtonText>
+          <ButtonText>生成管理接口和实现类</ButtonText>
         </Strings>
       </Button>
-      <Button guid="guidGpPackageCmdSet" id="TsId" priority="0x0100" type="Button">
+      <!--<Button guid="guidGpPackageCmdSet" id="TsId" priority="0x0100" type="Button">
         <Parent guid="guidGpPackageCmdSet" id="MyMenuGroup" />
         <Icon guid="guidImages" id="bmpPic3" />
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>生成客户端TS脚本</ButtonText>
         </Strings>
-      </Button>
+      </Button>-->
     </Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->

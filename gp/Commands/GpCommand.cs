@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.Design;
+using gp.Transfers;
 using Microsoft.VisualStudio.Shell;
 using Task = System.Threading.Tasks.Task;
 
@@ -48,12 +49,12 @@ namespace gp.Commands
             commandService.AddCommand(menuItem);
 
             var ctrlId = new CommandID(CommandSet, ControllerId);
-            var ctrlItem = new MenuCommand(ExecuteCtrl, ctrlId);
+            var ctrlItem = new MenuCommand(ExecuteManager, ctrlId);
             commandService.AddCommand(ctrlItem);
 
-            var tsId = new CommandID(CommandSet, TsId);
-            var tsItem = new MenuCommand(ExecuteTs, tsId);
-            commandService.AddCommand(tsItem);
+            //var tsId = new CommandID(CommandSet, TsId);
+            //var tsItem = new MenuCommand(ExecuteTs, tsId);
+            //commandService.AddCommand(tsItem);
         }
 
         private void ExecuteTs(object sender, EventArgs e)
@@ -66,14 +67,15 @@ namespace gp.Commands
             generater.ExecuteTypeScript();
         }
 
-        private void ExecuteCtrl(object sender, EventArgs e)
+        private void ExecuteManager(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             var sourceFile = ServiceProvider.GetCurrentFile();
             if (sourceFile?.Exists != true || !sourceFile.Extension.Equals(".cs", StringComparison.OrdinalIgnoreCase))
                 return;
-            var generater = new SourceGenerater(ServiceProvider, sourceFile);
-            generater.ExecuteController();
+
+            var transfer = new ClassManagerTransfer(FileElement.FromFile(sourceFile.FullName), sourceFile.Name);
+            transfer.Save(sourceFile.DirectoryName);
         }
 
         /// <summary>
@@ -111,8 +113,9 @@ namespace gp.Commands
             var sourceFile = ServiceProvider.GetCurrentFile();
             if (sourceFile?.Exists != true || !sourceFile.Extension.Equals(".cs", StringComparison.OrdinalIgnoreCase))
                 return;
-            var generater = new SourceGenerater(ServiceProvider, sourceFile);
-            generater.ExecuteDataMigration();
+
+            var transfer = new ClassDataTransfer(FileElement.FromFile(sourceFile.FullName), sourceFile.Name);
+            transfer.Save(sourceFile.DirectoryName);
         }
     }
 }
