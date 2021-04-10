@@ -52,19 +52,26 @@ namespace gp.Commands
             var ctrlItem = new MenuCommand(ExecuteManager, ctrlId);
             commandService.AddCommand(ctrlItem);
 
-            //var tsId = new CommandID(CommandSet, TsId);
-            //var tsItem = new MenuCommand(ExecuteTs, tsId);
-            //commandService.AddCommand(tsItem);
+            var tsId = new CommandID(CommandSet, TsId);
+            var tsItem = new MenuCommand(ExecuteResource, tsId);
+            commandService.AddCommand(tsItem);
         }
 
-        private void ExecuteTs(object sender, EventArgs e)
+        private void ExecuteResource(object sender, EventArgs e)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             var sourceFile = ServiceProvider.GetCurrentFile();
-            if (sourceFile?.Exists != true || !sourceFile.Extension.Equals(".cs", StringComparison.OrdinalIgnoreCase))
+            if (sourceFile?.Exists != true || !sourceFile.Name.Equals("Resources.resx", StringComparison.OrdinalIgnoreCase) || sourceFile.Directory?.Parent == null)
                 return;
-            var generater = new SourceGenerater(ServiceProvider, sourceFile);
-            generater.ExecuteTypeScript();
+            var @namespace = sourceFile.Directory.Parent.Name;
+            var directoryName = sourceFile.Directory.Parent.FullName;
+            if (sourceFile.Directory.Name.Equals("Properties", StringComparison.OrdinalIgnoreCase))
+            {
+                directoryName = sourceFile.Directory.FullName;
+                @namespace = $"{@namespace}.{sourceFile.Directory.Name}";
+            }
+            var transfer = new ResourceTransfer(sourceFile.FullName, @namespace);
+            transfer.Save(directoryName);
         }
 
         private void ExecuteManager(object sender, EventArgs e)

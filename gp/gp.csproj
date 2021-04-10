@@ -93,6 +93,7 @@
     <Compile Include="Generators\SimpleCodeParser.cs" />
     <Compile Include="Generators\SourceGenerater.cs" />
     <Compile Include="Transfers\EntityType.cs" />
+    <Compile Include="Transfers\ResourceTransfer.cs" />
     <Compile Include="Transfers\TransferBase.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -130,6 +131,7 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

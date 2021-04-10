@@ -31,5 +31,14 @@ namespace gp.Tests
             transfer.Save(Directory.GetCurrentDirectory());
             Assert.IsTrue(true);
         }
+
+
+        [TestMethod()]
+        public void CSharpResourceTest()
+        {
+            var transfer = new ResourceTransfer(@"..\..\Properties\Resources.resx", "gpTests");
+            transfer.Save(@"..\..\");
+            Assert.IsTrue(true);
+        }
     }
 }

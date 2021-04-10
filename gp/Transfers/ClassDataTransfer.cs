@@ -28,7 +28,7 @@ namespace gp.Transfers
         /// <summary>
         /// 文件名称。
         /// </summary>
-        public override string FileName => $"{Name}.data.cs";
+        public override string FileName => $"{Name}DataMigration.cs";
 
         /// <summary>
         /// 实体类型列表。
