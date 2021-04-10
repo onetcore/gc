@@ -32,7 +32,7 @@ namespace gp.Transfers
         /// <summary>
         /// 文件名称。
         /// </summary>
-        public override string FileName => "Resources.cs";
+        public override string FileName => "Resources.resx.cs";
 
         /// <summary>返回表示当前对象的字符串。</summary>
         /// <returns>表示当前对象的字符串。</returns>

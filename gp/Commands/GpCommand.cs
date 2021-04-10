@@ -64,14 +64,9 @@ namespace gp.Commands
             if (sourceFile?.Exists != true || !sourceFile.Name.Equals("Resources.resx", StringComparison.OrdinalIgnoreCase) || sourceFile.Directory?.Parent == null)
                 return;
             var @namespace = sourceFile.Directory.Parent.Name;
-            var directoryName = sourceFile.Directory.Parent.FullName;
-            if (sourceFile.Directory.Name.Equals("Properties", StringComparison.OrdinalIgnoreCase))
-            {
-                directoryName = sourceFile.Directory.FullName;
-                @namespace = $"{@namespace}.{sourceFile.Directory.Name}";
-            }
+            @namespace = $"{@namespace}.{sourceFile.Directory.Name}";
             var transfer = new ResourceTransfer(sourceFile.FullName, @namespace);
-            transfer.Save(directoryName);
+            transfer.Save(sourceFile.DirectoryName);
         }
 
         private void ExecuteManager(object sender, EventArgs e)
