@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
@@ -10,17 +11,15 @@ namespace gp.Transfers
     /// </summary>
     public class ResourceTransfer : TransferBase
     {
-        private readonly string _ns;
         private readonly IDictionary<string, string> _data = new Dictionary<string, string>();
         /// <summary>
         /// 资源转换实例。
         /// </summary>
-        /// <param name="file">文件物理路径。</param>
-        /// <param name="ns">命名空间。</param>
-        public ResourceTransfer(string file, string ns)
+        /// <param name="file">文件信息。</param>
+        public ResourceTransfer(FileInfo file)
+            : base(file, false)
         {
-            _ns = ns;
-            var document = XDocument.Load(file);
+            var document = XDocument.Load(file.FullName);
             var items = from item in document.Descendants("data")
                         select new { Name = item.Attribute("name").Value, Value = item.Element("value").Value };
             foreach (var item in items)
@@ -41,7 +40,7 @@ namespace gp.Transfers
             var builder = new StringBuilder();
             builder.AppendLine("// ReSharper disable UnusedMember.Global");
             builder.AppendLine("// ReSharper disable InconsistentNaming");
-            builder.Append("namespace ").AppendLine(_ns);
+            builder.Append("namespace ").AppendLine(Namespace);
             builder.AppendLine("{");
             builder.AppendLine("    using System;");
             builder.AppendLine("    using Gentings.Localization;").AppendLine();

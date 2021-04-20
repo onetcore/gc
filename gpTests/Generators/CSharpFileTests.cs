@@ -16,8 +16,8 @@ namespace gp.Tests
         [TestMethod()]
         public void CSharpDataTest()
         {
-            var file = FileElement.FromFile("Document.cs");
-            var transfer = new ClassDataTransfer(file, "Document");
+            var file = new FileInfo("Document.cs");
+            var transfer = new ClassDataTransfer(file);
             transfer.Save(Directory.GetCurrentDirectory());
             Assert.IsTrue(true);
         }
@@ -26,8 +26,8 @@ namespace gp.Tests
         [TestMethod()]
         public void CSharpManagerTest()
         {
-            var file = FileElement.FromFile("Document.cs");
-            var transfer = new ClassManagerTransfer(file, "Document");
+            var file = new FileInfo("Document.cs");
+            var transfer = new ClassManagerTransfer(file);
             transfer.Save(Directory.GetCurrentDirectory());
             Assert.IsTrue(true);
         }
@@ -36,8 +36,19 @@ namespace gp.Tests
         [TestMethod()]
         public void CSharpResourceTest()
         {
-            var transfer = new ResourceTransfer(@"..\..\Properties\Resources.resx", "gpTests");
-            transfer.Save(@"..\..\");
+            var file = new FileInfo(@"..\..\Properties\Resources.resx");
+            var transfer = new ResourceTransfer(file);
+            transfer.Save();
+            Assert.IsTrue(true);
+        }
+
+
+        [TestMethod()]
+        public void BlazorTest()
+        {
+            var file = new FileInfo(@"NavMenu.razor");
+            var transfer = new BlazorCodeBehindTransfer(file);
+            transfer.Save();
             Assert.IsTrue(true);
         }
     }

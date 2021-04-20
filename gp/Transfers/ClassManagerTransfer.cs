@@ -14,21 +14,21 @@ namespace gp.Transfers
         /// <summary>
         /// 初始化类<see cref="ClassManagerTransfer"/>。
         /// </summary>
-        /// <param name="file">当前文件实例。</param>
-        /// <param name="fileName">文件名称。</param>
-        public ClassManagerTransfer(FileElement file, string fileName)
+        /// <param name="file">文件信息实例。</param>
+        public ClassManagerTransfer(FileInfo file)
+            : base(file)
         {
-            _file = file;
-            Entities = file.GetTypes<ClassElement>()
+            _file = new FileElement(Source);
+            Entities = _file.GetTypes<ClassElement>()
                 .Where(x => x.IsDefined("Table"))
                 .ToList();
-            Name = Path.GetFileNameWithoutExtension(fileName);
+            FileName = $"{Path.GetFileNameWithoutExtension(File.Name)}Manager.cs";
         }
 
         /// <summary>
         /// 文件名称。
         /// </summary>
-        public override string FileName => $"{Name}Manager.cs";
+        public override string FileName { get; }
 
         /// <summary>
         /// 实体类型列表。
@@ -168,6 +168,11 @@ namespace gp.Transfers
                     case EntityType.GroupBase:
                         {
                             builder.Append("GroupManager<").Append(entity.Name).Append(">, ");
+                        }
+                        break;
+                    default:
+                        {
+                            builder.Append("ObjectManagerBase<").Append(entity.Name).Append(">, ");
                         }
                         break;
                 }

@@ -63,6 +63,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Transfers\BlazorCodeBehindTransfer.cs" />
     <Compile Include="Transfers\ClassManagerTransfer.cs" />
     <Compile Include="Transfers\ClassDataTransfer.cs" />
     <Compile Include="CodeDom\TypeElement.cs" />

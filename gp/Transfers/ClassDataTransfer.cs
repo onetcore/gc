@@ -14,21 +14,21 @@ namespace gp.Transfers
         /// <summary>
         /// 初始化类<see cref="ClassDataTransfer"/>。
         /// </summary>
-        /// <param name="file">当前文件实例。</param>
-        /// <param name="fileName">文件名称。</param>
-        public ClassDataTransfer(FileElement file, string fileName)
+        /// <param name="file">文件信息实例。</param>
+        public ClassDataTransfer(FileInfo file)
+            : base(file)
         {
-            _file = file;
-            Entities = file.GetTypes<ClassElement>()
+            _file = new FileElement(Source);
+            Entities = _file.GetTypes<ClassElement>()
                 .Where(x => x.IsDefined("Table"))
                 .ToList();
-            Name = Path.GetFileNameWithoutExtension(fileName);
+            FileName = $"{Name}DataMigration.cs";
         }
 
         /// <summary>
         /// 文件名称。
         /// </summary>
-        public override string FileName => $"{Name}DataMigration.cs";
+        public override string FileName { get; }
 
         /// <summary>
         /// 实体类型列表。

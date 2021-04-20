@@ -17,6 +17,7 @@ namespace gp.Commands
         public const int CommandId = 0x0100;
         public const int ControllerId = 0x0101;
         public const int TsId = 0x0102;
+        public const int BlazorCodeBehind = 0x0103;
 
         /// <summary>
         /// Command menu group (command set GUID).
@@ -55,6 +56,20 @@ namespace gp.Commands
             var tsId = new CommandID(CommandSet, TsId);
             var tsItem = new MenuCommand(ExecuteResource, tsId);
             commandService.AddCommand(tsItem);
+
+            var codeBehind = new CommandID(CommandSet, BlazorCodeBehind);
+            var codeBehindItem = new MenuCommand(ExecuteBlazorCodeBehind, codeBehind);
+            commandService.AddCommand(codeBehindItem);
+        }
+
+        private void ExecuteBlazorCodeBehind(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var sourceFile = ServiceProvider.GetCurrentFile();
+            if (sourceFile?.Exists != true || !sourceFile.Extension.Equals(".razor", StringComparison.OrdinalIgnoreCase))
+                return;
+            var transfer = new BlazorCodeBehindTransfer(sourceFile);
+            transfer.Save();
         }
 
         private void ExecuteResource(object sender, EventArgs e)
@@ -63,10 +78,8 @@ namespace gp.Commands
             var sourceFile = ServiceProvider.GetCurrentFile();
             if (sourceFile?.Exists != true || !sourceFile.Name.Equals("Resources.resx", StringComparison.OrdinalIgnoreCase) || sourceFile.Directory?.Parent == null)
                 return;
-            var @namespace = sourceFile.Directory.Parent.Name;
-            @namespace = $"{@namespace}.{sourceFile.Directory.Name}";
-            var transfer = new ResourceTransfer(sourceFile.FullName, @namespace);
-            transfer.Save(sourceFile.DirectoryName);
+            var transfer = new ResourceTransfer(sourceFile);
+            transfer.Save();
         }
 
         private void ExecuteManager(object sender, EventArgs e)
@@ -76,8 +89,8 @@ namespace gp.Commands
             if (sourceFile?.Exists != true || !sourceFile.Extension.Equals(".cs", StringComparison.OrdinalIgnoreCase))
                 return;
 
-            var transfer = new ClassManagerTransfer(FileElement.FromFile(sourceFile.FullName), sourceFile.Name);
-            transfer.Save(sourceFile.DirectoryName);
+            var transfer = new ClassManagerTransfer(sourceFile);
+            transfer.Save();
         }
 
         /// <summary>
@@ -116,8 +129,8 @@ namespace gp.Commands
             if (sourceFile?.Exists != true || !sourceFile.Extension.Equals(".cs", StringComparison.OrdinalIgnoreCase))
                 return;
 
-            var transfer = new ClassDataTransfer(FileElement.FromFile(sourceFile.FullName), sourceFile.Name);
-            transfer.Save(sourceFile.DirectoryName);
+            var transfer = new ClassDataTransfer(sourceFile);
+            transfer.Save();
         }
     }
 }
