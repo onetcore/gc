@@ -54,7 +54,7 @@
           If you do not want an image next to your command, remove the Icon node /> -->
       <Button guid="guidGpPackageCmdSet" id="GpCommandId" priority="0x0100" type="Button">
         <Parent guid="guidGpPackageCmdSet" id="MyMenuGroup" />
-        <Icon guid="guidImages" id="bmpPic1" />
+        <!--<Icon guid="guidImages" id="bmpPic1" />-->
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>生成数据迁移类</ButtonText>
@@ -62,28 +62,20 @@
       </Button>
       <Button guid="guidGpPackageCmdSet" id="ControllerId" priority="0x0100" type="Button">
         <Parent guid="guidGpPackageCmdSet" id="MyMenuGroup" />
-        <Icon guid="guidImages" id="bmpPic2" />
+        <!--<Icon guid="guidImages" id="bmpPic2" />-->
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>生成管理接口和实现类</ButtonText>
         </Strings>
       </Button>
-      <Button guid="guidGpPackageCmdSet" id="TsId" priority="0x0100" type="Button">
+      <!--<Button guid="guidGpPackageCmdSet" id="BlazorCodeBehind" priority="0x0100" type="Button">
         <Parent guid="guidGpPackageCmdSet" id="MyMenuGroup" />
-        <Icon guid="guidImages" id="bmpPic3" />
-        <CommandFlag>DynamicVisibility</CommandFlag>
-        <Strings>
-          <ButtonText>生成资源文件类</ButtonText>
-        </Strings>
-      </Button>
-      <Button guid="guidGpPackageCmdSet" id="BlazorCodeBehind" priority="0x0100" type="Button">
-        <Parent guid="guidGpPackageCmdSet" id="MyMenuGroup" />
-        <Icon guid="guidImages" id="bmpPicX" />
+        --><!--<Icon guid="guidImages" id="bmpPicX" />--><!--
         <CommandFlag>DynamicVisibility</CommandFlag>
         <Strings>
           <ButtonText>添加CodeBehind</ButtonText>
         </Strings>
-      </Button>
+      </Button>-->
     </Buttons>
 
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->

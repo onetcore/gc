@@ -53,10 +53,6 @@ namespace gp.Commands
             var ctrlItem = new MenuCommand(ExecuteManager, ctrlId);
             commandService.AddCommand(ctrlItem);
 
-            var tsId = new CommandID(CommandSet, TsId);
-            var tsItem = new MenuCommand(ExecuteResource, tsId);
-            commandService.AddCommand(tsItem);
-
             var codeBehind = new CommandID(CommandSet, BlazorCodeBehind);
             var codeBehindItem = new MenuCommand(ExecuteBlazorCodeBehind, codeBehind);
             commandService.AddCommand(codeBehindItem);
@@ -69,16 +65,6 @@ namespace gp.Commands
             if (sourceFile?.Exists != true || !sourceFile.Extension.Equals(".razor", StringComparison.OrdinalIgnoreCase))
                 return;
             var transfer = new BlazorCodeBehindTransfer(sourceFile);
-            transfer.Save();
-        }
-
-        private void ExecuteResource(object sender, EventArgs e)
-        {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var sourceFile = ServiceProvider.GetCurrentFile();
-            if (sourceFile?.Exists != true || !sourceFile.Name.Equals("Resources.resx", StringComparison.OrdinalIgnoreCase) || sourceFile.Directory?.Parent == null)
-                return;
-            var transfer = new ResourceTransfer(sourceFile);
             transfer.Save();
         }
 
