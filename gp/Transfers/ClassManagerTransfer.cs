@@ -41,7 +41,6 @@ namespace gp.Transfers
         {
             var ns = Entities.Select(x => x.Parent).OfType<NamespaceElement>().FirstOrDefault();
             var usings = new StringBuilder();
-            usings.AppendLine("using System;");
             usings.AppendLine("using Gentings;");
             usings.AppendLine("using Gentings.Data;");
             string idType = null;
@@ -52,7 +51,7 @@ namespace gp.Transfers
             foreach (var entity in Entities)
             {
                 // using
-                if (entity.BaseTypes.Contains("IdObject") || !string.IsNullOrEmpty(idType = entity.BaseTypes
+                if (entity.BaseTypes.Contains("IIdObject") || !string.IsNullOrEmpty(idType = entity.BaseTypes
                    .SingleOrDefault(x => x.StartsWith("IdObject<"))?.Substring(9).Trim(' ', '>')))
                 {
                     usings.AppendLine("using Gentings.Extensions;");
@@ -179,7 +178,7 @@ namespace gp.Transfers
                 builder.AppendFormat("I{0}Manager", entity.Name).AppendLine();
                 builder.AppendLine("    {");
                 builder.AppendLine("        /// <summary>");
-                builder.AppendFormat("        /// 初始化类<see cref=\"{0}\"/>。", entity.Name).AppendLine();
+                builder.AppendFormat("        /// 初始化类<see cref=\"{0}Manager\"/>。", entity.Name).AppendLine();
                 builder.AppendLine("        /// </summary>");
                 builder.AppendLine("        /// <param name=\"context\">数据库操作接口实例。</param>");
                 if (entityType == EntityType.GroupBase)
