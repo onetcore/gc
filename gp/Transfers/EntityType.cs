@@ -14,6 +14,10 @@
         /// </summary>
         IdObject,
         /// <summary>
+        /// 包含Id的实体。
+        /// </summary>
+        CachableIdObject,
+        /// <summary>
         /// 分类基类。
         /// </summary>
         CategoryBase,

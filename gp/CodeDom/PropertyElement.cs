@@ -29,6 +29,11 @@ namespace gp
         public string SetField { get; private set; }
 
         /// <summary>
+        /// 是否可读写。
+        /// </summary>
+        public bool IsGetAndSet => !string.IsNullOrEmpty(GetField) && !string.IsNullOrEmpty(SetField);
+
+        /// <summary>
         /// 读取当前代码块。
         /// </summary>
         /// <param name="reader">字符串读取实例。</param>

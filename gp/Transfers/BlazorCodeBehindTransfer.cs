@@ -70,7 +70,7 @@ namespace gp.Transfers
         /// </summary>
         /// <param name="directoryName">文件夹名称，如果为空则表示当前文件夹。</param>
         /// <param name="overwrite">是否覆盖文件。</param>
-        public override void Save(string directoryName = null, bool overwrite = true)
+        public override void Save(string directoryName = null, bool overwrite = false)
         {
             //css文件
             var path = $"{File.Name}.css";
@@ -81,7 +81,7 @@ namespace gp.Transfers
             base.Save(directoryName, false);
             //原文件
             if (!string.IsNullOrWhiteSpace(Code))
-                Save(File.FullName, Source);
+                Save(File.FullName, Source, true);
         }
     }
 }

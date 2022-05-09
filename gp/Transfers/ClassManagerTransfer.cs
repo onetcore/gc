@@ -39,7 +39,7 @@ namespace gp.Transfers
         /// <returns>表示当前对象的字符串。</returns>
         public override string ToString()
         {
-            var ns = Entities.Select(x => x.Parent).OfType<NamespaceElement>().FirstOrDefault();
+            var ns = Entities.First().Namespace;
             var usings = new StringBuilder();
             usings.AppendLine("using Gentings;");
             usings.AppendLine("using Gentings.Data;");
@@ -47,7 +47,7 @@ namespace gp.Transfers
             var entityType = EntityType.Default;
             var builder = new StringBuilder();
             builder.AppendLine();
-            builder.Append("namespace ").AppendLine(ns.Namespace).AppendLine("{");
+            builder.Append("namespace ").AppendLine(ns).AppendLine("{");
             foreach (var entity in Entities)
             {
                 // using
@@ -57,8 +57,15 @@ namespace gp.Transfers
                     usings.AppendLine("using Gentings.Extensions;");
                     entityType = EntityType.IdObject;
                 }
+                else if (entity.BaseTypes.Contains("ICachableIdObject") || !string.IsNullOrEmpty(idType = entity.BaseTypes
+                   .SingleOrDefault(x => x.StartsWith("ICachableIdObject<"))?.Substring(18).Trim(' ', '>')))
+                {
+                    usings.AppendLine("using Gentings.Extensions;");
+                    usings.AppendLine("using Microsoft.Extensions.Caching.Memory; ");
+                    entityType = EntityType.CachableIdObject;
+                }
                 else if (entity.BaseTypes.Contains("ISiteIdObject") || !string.IsNullOrEmpty(idType = entity.BaseTypes
-                             .SingleOrDefault(x => x.StartsWith("ISiteIdObject<"))?.Substring(9).Trim(' ', '>')))
+                             .SingleOrDefault(x => x.StartsWith("ISiteIdObject<"))?.Substring(14).Trim(' ', '>')))
                 {
                     usings.AppendLine("using Gentings.Saas;");
                     entityType = EntityType.IdObject;
@@ -86,6 +93,7 @@ namespace gp.Transfers
                     {
                         usings.AppendLine("using Gentings.Extensions.Groups;");
                     }
+                    usings.AppendLine("using Microsoft.Extensions.Caching.Memory; ");
                 }
                 else
                 {
@@ -124,6 +132,14 @@ namespace gp.Transfers
                             builder.Append(">, ");
                         }
                         break;
+                    case EntityType.CachableIdObject:
+                        {
+                            builder.Append("ICachableObjectManager<").Append(entity.Name);
+                            if (idType != null)
+                                builder.Append(", ").Append(idType);
+                            builder.Append(">, ");
+                        }
+                        break;
                     case EntityType.CategoryBase:
                         {
                             builder.Append("ICategoryManager<").Append(entity.Name).Append(">, ");
@@ -142,7 +158,37 @@ namespace gp.Transfers
                 }
                 builder.AppendLine("ISingletonService");
                 builder.AppendLine("    {");
+                // 排序
+                if (entity.BaseTypes.Contains("IOrderable"))
+                {
+                    builder.AppendLine(@"        /// <summary>
+        /// 上移一个位置。
+        /// </summary>
+        /// <param name=""id"">当前页面Id。</param>
+        /// <returns>返回移动结果。</returns>
+        bool MoveUp(int id);
 
+        /// <summary>
+        /// 上移一个位置。
+        /// </summary>
+        /// <param name=""id"">当前页面Id。</param>
+        /// <returns>返回移动结果。</returns>
+        Task<bool> MoveUpAsync(int id);
+
+        /// <summary>
+        /// 下移一个位置。
+        /// </summary>
+        /// <param name=""id"">当前页面Id。</param>
+        /// <returns>返回移动结果。</returns>
+        bool MoveDown(int id);
+
+        /// <summary>
+        /// 下移一个位置。
+        /// </summary>
+        /// <param name=""id"">当前页面Id。</param>
+        /// <returns>返回移动结果。</returns>
+        Task<bool> MoveDownAsync(int id);");
+                }
                 builder.AppendLine("    }");
                 builder.AppendLine();
 
@@ -154,6 +200,14 @@ namespace gp.Transfers
                     case EntityType.IdObject:
                         {
                             builder.Append("ObjectManager<").Append(entity.Name);
+                            if (idType != null)
+                                builder.Append(", ").Append(idType);
+                            builder.Append(">, ");
+                        }
+                        break;
+                    case EntityType.CachableIdObject:
+                        {
+                            builder.Append("CachableObjectManager<").Append(entity.Name);
                             if (idType != null)
                                 builder.Append(", ").Append(idType);
                             builder.Append(">, ");
@@ -185,6 +239,7 @@ namespace gp.Transfers
                     builder.AppendLine("        /// <param name=\"cache\">缓存接口。</param>");
                 switch (entityType)
                 {
+                    case EntityType.CachableIdObject:
                     case EntityType.GroupBase:
                         builder.AppendFormat("        public {0}Manager(IDbContext<{0}> context, IMemoryCache cache) : base(context, cache)", entity.Name).AppendLine();
                         break;
@@ -194,6 +249,100 @@ namespace gp.Transfers
                 }
                 builder.AppendLine("        {");
                 builder.AppendLine("        }");
+                // 排序
+                if (entity.BaseTypes.Contains("IOrderable"))
+                {
+                    builder.AppendLine(@"
+        /// <summary>
+        /// 添加实例。
+        /// </summary>
+        /// <param name=""model"">添加对象。</param>
+        /// <returns>返回添加结果。</returns>
+        public override bool Create(" + entity.Name + @" model)
+        {
+            if (model.Id == 0)
+                model.Order = 1 + Context.Max(x => x.Order, null);
+            return base.Create(model);
+        }
+
+        /// <summary>
+        /// 添加实例。
+        /// </summary>
+        /// <param name=""model"">添加对象。</param>
+        /// <param name=""cancellationToken"">取消标识。</param>
+        /// <returns>返回添加结果。</returns>
+        public override async Task<bool> CreateAsync(" + entity.Name + @" model, CancellationToken cancellationToken = default)
+        {
+            if (model.Id == 0)
+                model.Order = 1 + await Context.MaxAsync(x => x.Order, null, cancellationToken);
+            return await base.CreateAsync(model, cancellationToken);
+        }
+
+        /// <summary>
+        /// 上移一个位置。
+        /// </summary>
+        /// <param name=""id"">当前页面Id。</param>
+        /// <returns>返回移动结果。</returns>
+        public virtual bool MoveUp(int id)
+        {
+            var model = Context.Find(x => x.Id == id);
+            if (model == null)
+                return false;
+            if (Context.MoveUp(id, x => x.Order, null, false))
+                return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// 上移一个位置。
+        /// </summary>
+        /// <param name=""id"">当前页面Id。</param>
+        /// <returns>返回移动结果。</returns>
+        public virtual async Task<bool> MoveUpAsync(int id)
+        {
+            var model = await Context.FindAsync(x => x.Id == id);
+            if (model == null)
+                return false;
+            if (await Context.MoveUpAsync(id, x => x.Order, null, false))
+                return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// 下移一个位置。
+        /// </summary>
+        /// <param name=""id"">当前页面Id。</param>
+        /// <returns>返回移动结果。</returns>
+        public virtual bool MoveDown(int id)
+        {
+            var model = Context.Find(x => x.Id == id);
+            if (model == null)
+                return false;
+            if (Context.MoveDown(id, x => x.Order, null, false))
+                return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// 下移一个位置。
+        /// </summary>
+        /// <param name=""id"">当前页面Id。</param>
+        /// <returns>返回移动结果。</returns>
+        public virtual async Task<bool> MoveDownAsync(int id)
+        {
+            var model = await Context.FindAsync(x => x.Id == id);
+            if (model == null)
+                return false;
+            if (await Context.MoveDownAsync(id, x => x.Order, null, false))
+                return true;
+
+            return false;
+        }
+");
+                }
                 builder.AppendLine("    }");
                 builder.AppendLine();
             }

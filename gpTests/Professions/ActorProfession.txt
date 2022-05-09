@@ -1,0 +1,35 @@
+﻿using Gentings.Extensions;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace GSite.Extensions.Novels.Professions
+{
+    /// <summary>
+    /// 职业设定。
+    /// </summary>
+    [Table("novel_Levels")]
+    public class ActorProfession : ICachableIdObject
+    {
+        /// <summary>
+        /// 唯一Id。
+        /// </summary>
+        [Identity]
+        public int Id { get; set; }
+
+        /// <summary>
+        /// 名称。
+        /// </summary>
+        [Size(20)]
+        public string? Name { get; set; }
+
+        /// <summary>
+        /// 简介。
+        /// </summary>
+        [Size(500)]
+        public string? Description { get; set; }
+
+        /// <summary>
+        /// 小说Id。
+        /// </summary>
+        public int NovelId { get; set; }
+    }
+}

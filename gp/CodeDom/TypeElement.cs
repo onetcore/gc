@@ -31,6 +31,11 @@ namespace gp
         public List<string> Rules { get; private set; }
 
         /// <summary>
+        /// 命名空间。
+        /// </summary>
+        public string Namespace => (Parent as NamespaceElement)?.Namespace;
+
+        /// <summary>
         /// 读取当前代码块。
         /// </summary>
         /// <param name="reader">字符串读取实例。</param>

@@ -94,6 +94,7 @@
     <Compile Include="Generators\SimpleCodeParser.cs" />
     <Compile Include="Generators\SourceGenerater.cs" />
     <Compile Include="Transfers\EntityType.cs" />
+    <Compile Include="Transfers\RazorPageTransfer.cs" />
     <Compile Include="Transfers\TransferBase.cs" />
   </ItemGroup>
   <ItemGroup>

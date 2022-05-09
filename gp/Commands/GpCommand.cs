@@ -18,6 +18,7 @@ namespace gp.Commands
         public const int ControllerId = 0x0101;
         public const int TsId = 0x0102;
         public const int BlazorCodeBehind = 0x0103;
+        public const int RazorPage = 0x0104;
 
         /// <summary>
         /// Command menu group (command set GUID).
@@ -56,6 +57,20 @@ namespace gp.Commands
             var codeBehind = new CommandID(CommandSet, BlazorCodeBehind);
             var codeBehindItem = new MenuCommand(ExecuteBlazorCodeBehind, codeBehind);
             commandService.AddCommand(codeBehindItem);
+
+            var razorPage = new CommandID(CommandSet, RazorPage);
+            var razorPageItem = new MenuCommand(ExecuteRazorPage, razorPage);
+            commandService.AddCommand(razorPageItem);
+        }
+
+        private void ExecuteRazorPage(object sender, EventArgs e)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var sourceFile = ServiceProvider.GetCurrentFile();
+            if (sourceFile?.Exists != true || !sourceFile.Extension.Equals(".cs", StringComparison.OrdinalIgnoreCase))
+                return;
+            var transfer = new RazorPageTransfer(sourceFile);
+            transfer.Save();
         }
 
         private void ExecuteBlazorCodeBehind(object sender, EventArgs e)

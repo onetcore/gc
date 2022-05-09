@@ -14,29 +14,16 @@ namespace gp.Transfers
         /// </summary>
         /// <param name="file">文件信息实例。</param>
         protected TransferBase(FileInfo file)
-            : this(file, true)
-        {
-        }
-
-        /// <summary>
-        /// 初始化类<see cref="TransferBase"/>。
-        /// </summary>
-        /// <param name="file">文件信息实例。</param>
-        /// <param name="readSource">是否读取文件内容。</param>
-        protected TransferBase(FileInfo file, bool readSource)
         {
             File = file;
             Name = Path.GetFileNameWithoutExtension(file.Name);
-            Namespace = GetNamespace(file.Directory);
-            if (readSource)
-            {
-                using var fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using var fr = new StreamReader(fs, Encoding.UTF8);
-                Source = fr.ReadToEnd();
-            }
+            Init(file.Directory);
+            using var fs = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            using var fr = new StreamReader(fs, Encoding.UTF8);
+            Source = fr.ReadToEnd();
         }
 
-        private string GetNamespace(DirectoryInfo info)
+        private void Init(DirectoryInfo info)
         {
             var directories = new List<string>();
             directories.Add(info.Name);
@@ -47,14 +34,32 @@ namespace gp.Transfers
                 directories.Add(info.Name);
                 projectFiles = info.GetFiles("*.csproj", SearchOption.TopDirectoryOnly);
             }
+            Assembly = info.Name;
+            AssemblyPath = info.FullName;
             directories.Reverse();
-            return string.Join(".", directories);
+            Namespace = string.Join(".", directories);
+            DirectoryName = string.Join("/", directories).Substring(Assembly.Length);
         }
+
+        /// <summary>
+        /// 程序集名称。
+        /// </summary>
+        public string Assembly { get; private set; }
+
+        /// <summary>
+        /// 程序集对应的物理路径。
+        /// </summary>
+        public string AssemblyPath { get; private set; }
+
+        /// <summary>
+        /// 相对于程序集的绝对路径。
+        /// </summary>
+        public string DirectoryName { get; private set; }
 
         /// <summary>
         /// 根据当前目录和父级目录组合而成的命名空间。
         /// </summary>
-        public string Namespace { get; }
+        public string Namespace { get; private set; }
 
         /// <summary>
         /// 不包含扩展名的文件名。
@@ -81,20 +86,7 @@ namespace gp.Transfers
         /// </summary>
         /// <param name="directoryName">文件夹名称，如果为空则表示当前文件夹。</param>
         /// <param name="overwrite">是否覆盖文件。</param>
-        public virtual void Save(string directoryName = null, bool overwrite = true)
-        {
-            var fileName = GetPath(directoryName);
-            if (!overwrite && System.IO.File.Exists(fileName))
-                return;
-            Save(fileName, this);
-        }
-
-        /// <summary>
-        /// 获取文件物理路径。
-        /// </summary>
-        /// <param name="directoryName">文件夹名称，如果为空则表示当前文件夹。</param>
-        /// <returns>返回文件物理路径。</returns>
-        protected string GetPath(string directoryName = null)
+        public virtual void Save(string directoryName = null, bool overwrite = false)
         {
             if (string.IsNullOrEmpty(directoryName))
             {
@@ -104,8 +96,9 @@ namespace gp.Transfers
             {
                 Directory.CreateDirectory(directoryName);
             }
+            var fileName = Path.Combine(directoryName, FileName);
 
-            return Path.Combine(directoryName, FileName);
+            Save(fileName, this, overwrite);
         }
 
         /// <summary>
@@ -113,8 +106,11 @@ namespace gp.Transfers
         /// </summary>
         /// <param name="path">文件物理路径。</param>
         /// <param name="content">文件内容。</param>
-        protected void Save(string path, object content)
+        /// <param name="overwrite">是否覆盖文件。</param>
+        protected void Save(string path, object content, bool overwrite = true)
         {
+            if (!overwrite && System.IO.File.Exists(path))
+                return;
             using var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
             using var sw = new StreamWriter(fs, Encoding.UTF8);
             sw.WriteLine(content);

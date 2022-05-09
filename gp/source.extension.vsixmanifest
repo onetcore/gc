@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="gp.ec3a3c22-eaad-44ff-85c9-ae5c15bf6abf" Version="1.9" Language="zh-CN" Publisher="网魂小兵" />
+        <Identity Id="gp.ec3a3c22-eaad-44ff-85c9-ae5c15bf6abf" Version="1.11" Language="zh-CN" Publisher="网魂小兵" />
         <DisplayName>Gentings Plugin</DisplayName>
         <Description xml:space="preserve">使用Gettings框架开发辅助代码生成器插件。</Description>
         <MoreInfo>https://xmydcl.com/tools/gp</MoreInfo>

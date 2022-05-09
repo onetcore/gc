@@ -47,6 +47,18 @@ namespace gp
             }
         }
 
+        /// <summary>
+        /// 注释内容。
+        /// </summary>
+        public string Comment => string.Join(", ", Comments
+                    .Select(x => x.ToString().Trim().Trim('.', '。', '!', '/', ' ')
+                        .Replace("获取", string.Empty)
+                        .Replace("设置", string.Empty)
+                        .Replace("获取或设置", string.Empty)
+                        .Replace("获取或者设置", string.Empty)
+                    )
+                    .Where(x => !x.EndsWith(">")));
+
         private List<AttributeElement> _attributes;
         /// <summary>
         /// 评论列表。
