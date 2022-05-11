@@ -7,7 +7,8 @@ namespace GSite.Extensions.Novels.Professions
     /// 职业设定。
     /// </summary>
     [Table("novel_Levels")]
-    public class ActorProfession : ICachableIdObject
+    [Queryable]
+    public class ActorProfession : ICachableIdObject, IOrderable
     {
         /// <summary>
         /// 唯一Id。

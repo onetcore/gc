@@ -20,6 +20,7 @@ namespace gp.Transfers
             Entity = _file.GetTypes<ClassElement>()
                 .Where(x => x.IsDefined("Table"))
                 .FirstOrDefault();
+            FileName = $"{Entity.Name}Query.cs";
         }
 
         public override string FileName { get; }
@@ -27,6 +28,8 @@ namespace gp.Transfers
         public override void Save(string directoryName = null, bool overwrite = false)
         {
             if (Entity == null) return;
+            if (Entity.IsQueryable)
+                base.Save(directoryName, overwrite);
             var currentDirectory = directoryName ?? AssemblyPath;
             var area = Assembly;
             var index = Assembly.LastIndexOf('.');
@@ -68,12 +71,15 @@ namespace gp.Transfers
 
 ", name, Entity.Name.ToLower(), area.ToLower());
 
-            builder.AppendFormat(@"
+            builder.Append(@"
 <div class=""card data-list"">
-    <div class=""card-header toolbar"">
+    <div class=""card-header toolbar"">");
+            if (Entity.IsQueryable)
+                builder.AppendFormat(@"
         <form method=""get"">
             <gt:search asp-for=""Query!.Name"" placeholder=""请输入{0}...""></gt:search>
-        </form>
+        </form>", name);
+            builder.AppendFormat(@"
         <div class=""actions"">
             <gt:action-group>
                 <gt:action typeof=""Add"" asp-page=""./edit""></gt:action>
@@ -99,8 +105,7 @@ namespace gp.Transfers
                         <td>@item.Name</td>
                         <td>
                             <gt:action-dropdownmenu>
-                                <gt:action typeof=""Edit"" asp-page=""./edit"" asp-route-id=""@item.Id""></gt:action>
-                                {2}
+                                <gt:action typeof=""Edit"" asp-page=""./edit"" asp-route-id=""@item.Id""></gt:action>{2}
                                 <gt:action typeof=""Delete"" confirm=""你确定要删除“@item.Name”吗？"" asp-route-id=""@item.Id""></gt:action>
                             </gt:action-dropdownmenu>
                         </td>
@@ -108,11 +113,14 @@ namespace gp.Transfers
                 }}
             </tbody>
         </table>
-        <gt:page asp-route-name=""@Model.Query!.Name"" data=""@Model.Items""></gt:page>
-    </div>
-</div>
-", name, orderable ? " class=\"fl-hide\"" : "", orderable ? @"<gt:action typeof=""MoveUp"" asp-route-id=""@item.Id""></gt:action>
+", name, orderable ? " class=\"fl-hide\"" : "", orderable ? @"
+                                <gt:action typeof=""MoveUp"" asp-route-id=""@item.Id""></gt:action>
                                 <gt:action typeof=""MoveDown"" asp-route-id=""@item.Id""></gt:action>" : "");
+            if (Entity.IsQueryable)
+                builder.AppendLine(@"        <gt:page asp-route-name=""@Model.Query!.Name"" data=""@Model.Items""></gt:page>");
+            builder.AppendLine(@" </div>
+</div>
+");
             Save(path, builder, overwrite);
 
             builder = new StringBuilder();
@@ -136,19 +144,13 @@ namespace {3}
 
         public async Task OnGet()
         {{
-            Items = await _{4}Manager.LoadAsync(Query);
+            Items = await _{4}Manager.{5};
         }}
-
-        /// <summary>
-        /// 查询实例。
-        /// </summary>
-        [BindProperty(SupportsGet = true)]
-        public {2}Query? Query {{ get; set; }}
 
         /// <summary>
         /// {0}列表。
         /// </summary>
-        public IPageEnumerable<{2}>? Items {{ get; private set; }}
+        public I{6}Enumerable<{2}>? Items {{ get; private set; }}
 
         /// <summary>
         /// 删除{0}。
@@ -160,11 +162,25 @@ namespace {3}
             
             var result = await _{4}Manager.DeleteAsync(id);
             return Json(result, ""{0}"");
-        }}
-", Entity.Comment, Entity.Namespace, Entity.Name, @namespace, char.ToLower(Entity.Name[0]) + Entity.Name.Substring(1));
+        }}", Entity.Comment, Entity.Namespace, Entity.Name, @namespace, char.ToLower(Entity.Name[0]) + Entity.Name.Substring(1),
+Entity.IsQueryable ? "LoadAsync(Query!)" : "FetchAsync()",
+Entity.IsQueryable ? "Page" : "");
+
+            if (Entity.IsQueryable)
+            {
+                builder.AppendFormat(@"
+
+        /// <summary>
+        /// 查询实例。
+        /// </summary>
+        [BindProperty(SupportsGet = true)]
+        public {0}Query? Query {{ get; set; }}", Entity.Name);
+            }
+
             if (orderable)
             {
                 builder.AppendFormat(@"
+
         /// <summary>
         /// 上移{0}位置。
         /// </summary>
@@ -185,8 +201,7 @@ namespace {3}
             if (result)
                 return Success();
             return Error(""下移位置失败！"");
-        }}
-", Entity.Comment, char.ToLower(Entity.Name[0]) + Entity.Name.Substring(1));
+        }}", Entity.Comment, char.ToLower(Entity.Name[0]) + Entity.Name.Substring(1));
             }
             builder.AppendLine(@"
     }
@@ -212,7 +227,14 @@ namespace {3}
             {
                 if (filed is PropertyElement property && property.Name != "Id" && property.IsGetAndSet)
                 {
-                    builder.AppendFormat(@"    <div class=""mb-3"">
+                    if (property.Name == "Description")
+                        builder.AppendFormat(@"    <div class=""mb-3"">
+        <label class=""form-label"">{0}</label>
+        <textarea asp-for=""Input!.Description"" class=""form-control"" rows=""5""></textarea>
+    </div>
+", property.Comment);
+                    else
+                        builder.AppendFormat(@"    <div class=""mb-3"">
         <label class=""form-label"">{1}</label>
         <input asp-for=""Input!.{0}"" class=""form-control"" />
         <span class=""text-danger"" asp-validation-for=""Input!.{0}""></span>
@@ -267,7 +289,7 @@ namespace {3}
             if (isValid)
             {{
                 var result = await _{4}Manager.SaveAsync(Input);
-                return Json(result, Input.Name);
+                return Json(result, Input.Name!);
             }}
 
             return Error();
@@ -276,6 +298,101 @@ namespace {3}
 }}
 ", Entity.Comment, Entity.Namespace, Entity.Name, @namespace, char.ToLower(Entity.Name[0]) + Entity.Name.Substring(1));
             Save(path + ".cs", builder, overwrite);
+        }
+
+        public override string ToString()
+        {
+            if (Entity == null || !Entity.IsQueryable)
+                return null;
+            var builder = new StringBuilder();
+            builder.AppendLine("using Gentings.Extensions;");
+            var tagable = Entity.BaseTypes.Contains("ITagable");
+            if (tagable)
+                builder.AppendLine("using Gentings.Extensions.Tagables;");
+
+            builder.AppendLine();
+            builder.Append("namespace ").AppendLine(Entity.Namespace).AppendLine("{");
+
+            // comment
+            string icomment = null;
+            foreach (var comment in Entity.Comments)
+            {
+                var summary = "    ";
+                summary += comment.ToString().Trim();
+                icomment += summary;
+                if (!summary.EndsWith(">"))
+                {
+                    icomment = icomment.Trim('.', '。', '!');
+                    icomment += "分页查询。";
+                }
+                icomment += "\r\n";
+            }
+
+            builder.Append(icomment);
+            builder.AppendFormat("    public class {0}Query : ", Entity.Name);
+            if (Entity.OrderBy.Count > 0)
+                builder.AppendFormat("OrderableQueryBase<{0}, {0}Query.OrderBy>", Entity.Name);
+            else
+                builder.AppendFormat("QueryBase<{0}>", Entity.Name);
+            builder.AppendLine().AppendLine("    {");
+
+            var named = Entity.Contains("Name");
+            if (named)
+            {
+                builder.AppendLine(@"        /// <summary>
+        /// 名称。
+        /// </summary>
+        public string? Name { get; set; }").AppendLine();
+            }
+
+            if (tagable)
+            {
+                builder.AppendLine(@"        /// <summary>
+        /// 标签Id列表。
+        /// </summary>
+        public int[]? TagIds { get; set; }").AppendLine();
+            }
+
+            builder.AppendFormat(@"        /// <summary>
+        /// 初始化查询上下文。
+        /// </summary>
+        /// <param name=""context"">查询上下文。</param>
+        protected override void Init(IQueryContext<{0}> context)
+        {{
+            base.Init(context);", Entity.Name).AppendLine();
+            if (named)
+            {
+                builder.AppendLine(@"            if (!string.IsNullOrEmpty(Name))
+                context.Where(x => x.Name!.Contains(Name));");
+            }
+            if (tagable)
+            {
+                builder.AppendFormat(@"            if (TagIds?.Length > 0)
+                context.Where<{0}, {0}Tag, {0}TagIndex>(TagIds);", Entity.Name).AppendLine();
+            }
+            builder.AppendLine("        }");
+
+            if (Entity.OrderBy.Count > 0)
+            {
+                builder.AppendLine();
+                builder.AppendLine(@"        /// <summary>
+        /// 排序。
+        /// </summary>
+        public enum OrderBy
+        {");
+                foreach (var property in Entity.OrderBy)
+                {
+                    builder.AppendFormat(@"            /// <summary>
+            /// {0}。
+            /// </summary>", property.Comment).AppendLine();
+                    builder.Append("            ").Append(property.Name).AppendLine(",");
+                }
+                builder.AppendLine("        }");
+            }
+
+            builder.AppendLine(@"    }
+}");
+            return builder.ToString();
         }
     }
 }

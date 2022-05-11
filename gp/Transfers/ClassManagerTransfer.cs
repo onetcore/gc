@@ -82,6 +82,18 @@ namespace gp.Transfers
                         usings.AppendLine("using Gentings.Extensions.Categories;");
                     }
                 }
+                else if (entity.BaseTypes.Contains("CachableCategoryBase"))
+                {
+                    entityType = EntityType.CachableCategoryBase;
+                    if (_file.IsUsing("Gentings.Saas.Categories"))
+                    {
+                        usings.AppendLine("using Gentings.Saas.Categories;");
+                    }
+                    else
+                    {
+                        usings.AppendLine("using Gentings.Extensions.Categories;");
+                    }
+                }
                 else if (entity.BaseTypes.Any(x => x.StartsWith("GroupBase<")))
                 {
                     entityType = EntityType.GroupBase;
@@ -143,6 +155,11 @@ namespace gp.Transfers
                     case EntityType.CategoryBase:
                         {
                             builder.Append("ICategoryManager<").Append(entity.Name).Append(">, ");
+                        }
+                        break;
+                    case EntityType.CachableCategoryBase:
+                        {
+                            builder.Append("ICachableCategoryManager<").Append(entity.Name).Append(">, ");
                         }
                         break;
                     case EntityType.GroupBase:
@@ -218,6 +235,11 @@ namespace gp.Transfers
                             builder.Append("CategoryManager<").Append(entity.Name).Append(">, ");
                         }
                         break;
+                    case EntityType.CachableCategoryBase:
+                        {
+                            builder.Append("CachableCategoryManager<").Append(entity.Name).Append(">, ");
+                        }
+                        break;
                     case EntityType.GroupBase:
                         {
                             builder.Append("GroupManager<").Append(entity.Name).Append(">, ");
@@ -240,6 +262,7 @@ namespace gp.Transfers
                 switch (entityType)
                 {
                     case EntityType.CachableIdObject:
+                    case EntityType.CachableCategoryBase:
                     case EntityType.GroupBase:
                         builder.AppendFormat("        public {0}Manager(IDbContext<{0}> context, IMemoryCache cache) : base(context, cache)", entity.Name).AppendLine();
                         break;
@@ -344,7 +367,6 @@ namespace gp.Transfers
 ");
                 }
                 builder.AppendLine("    }");
-                builder.AppendLine();
             }
             builder.AppendLine("}");
             usings.Append(builder);

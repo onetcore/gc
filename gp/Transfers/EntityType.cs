@@ -22,6 +22,10 @@
         /// </summary>
         CategoryBase,
         /// <summary>
+        /// 缓存分类。
+        /// </summary>
+        CachableCategoryBase,
+        /// <summary>
         /// 分组基类。
         /// </summary>
         GroupBase,

@@ -18,6 +18,8 @@
             attribute = _attribute.Substring(1).Trim();
             var index = attribute.IndexOf('(');
             Name = index == -1 ? attribute.TrimEnd(']', ' ') : attribute.Substring(0, index);
+            if (Name.EndsWith("Attribute"))
+                Name = Name.Substring(0, Name.Length - 9);
             Parent = parent;
         }
 

@@ -149,5 +149,26 @@ namespace gp
                     break;
             }
         }
+
+        private bool? _isQueryable;
+        /// <summary>
+        /// 是否具有分页查询定义。
+        /// </summary>
+        public bool IsQueryable => _isQueryable ??= (IsDefined("Queryable") || OrderBy.Count > 0);
+
+        private List<PropertyElement> _orderBy;
+        /// <summary>
+        /// 排序分页查询列表。
+        /// </summary>
+        public List<PropertyElement> OrderBy => _orderBy ??= this.Select(x => x as PropertyElement)
+            .Where(e => e != null && e.IsPublic && e.IsGetAndSet && e.IsDefined("OrderBy"))
+            .ToList();
+
+        /// <summary>
+        /// 是否包含成员实例。
+        /// </summary>
+        /// <param name="name">成员名称。</param>
+        /// <returns>返回判断结果。</returns>
+        public bool Contains(string name) => this.Any(x => x is MemberElement e && e.Name.Equals(name, System.StringComparison.OrdinalIgnoreCase));
     }
 }
