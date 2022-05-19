@@ -102,6 +102,16 @@ namespace gp
         }
 
         /// <summary>
+        /// 获取特性实例。
+        /// </summary>
+        /// <param name="attributeName">特性名称。</param>
+        /// <returns>返回特性实例。</returns>
+        public AttributeElement GetAttribute(string attributeName)
+        {
+            return Attributes.SingleOrDefault(x => x.Name.Equals(attributeName, StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
         /// 排序Id。
         /// </summary>
         public int Index { get; set; }

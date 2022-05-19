@@ -6,9 +6,8 @@ namespace GSite.Extensions.Novels.Professions
     /// <summary>
     /// 职业设定。
     /// </summary>
-    [Table("novel_Levels")]
-    [Queryable]
-    public class ActorProfession : ICachableIdObject, IOrderable
+    [Table("novel_Professions")]
+    public class Profession : ICachableIdObject
     {
         /// <summary>
         /// 唯一Id。
@@ -20,17 +19,30 @@ namespace GSite.Extensions.Novels.Professions
         /// 名称。
         /// </summary>
         [Size(20)]
+        [Orderable]
+        [NotNull]
+        [Queryable]
         public string? Name { get; set; }
 
         /// <summary>
         /// 简介。
         /// </summary>
         [Size(500)]
+        [NotNull]
         public string? Description { get; set; }
 
         /// <summary>
         /// 小说Id。
         /// </summary>
+        [Movable(true)]
+        [Queryable("nid")]
         public int NovelId { get; set; }
+        
+        /// <summary>
+        /// 排序。
+        /// </summary>
+        [Movable]
+        [NotUpdated]
+        public int Sort{ get; set; }
     }
 }

@@ -9,7 +9,7 @@ namespace gp.Tests
     {
         private string CurrentDirectory => Path.Combine(Directory.GetCurrentDirectory(), "Result");
         private const string DirectoryName = "../../";
-        private const string FileName = DirectoryName + "Professions/ActorProfession.txt";
+        private const string FileName = DirectoryName + "Professions/Profession.txt";
 
         [TestMethod()]
         public void CSharpDataTest()

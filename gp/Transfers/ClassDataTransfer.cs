@@ -56,8 +56,8 @@ namespace gp.Transfers
             builder.Append("        {");
             foreach (var entity in Entities)
             {
-                var properties = entity.OfType<PropertyElement>()
-                    .Where(x => x.IsPublic && x.GetField != null && x.SetField != null && !x.IsDefined("NotMapped"))
+                var properties = entity.Properties
+                    .Where(x => !x.IsDefined("NotMapped"))
                     .ToList();
                 if (properties.Count == 0)
                     continue;

@@ -150,18 +150,45 @@ namespace gp
             }
         }
 
+        private List<PropertyElement>? _properties;
+        /// <summary>
+        /// 公有可读写的属性列表。
+        /// </summary>
+        public List<PropertyElement> Properties
+        {
+            get
+            {
+                if (_properties == null)
+                {
+                    _properties = this
+                        .OfType<PropertyElement>()
+                        .Where(x => x.IsPublic && x.IsGetAndSet)
+                        .ToList();
+                }
+                return _properties;
+            }
+        }
+
+        private List<PropertyElement> _queryable;
+        /// <summary>
+        /// 分页查询列表。
+        /// </summary>
+        public List<PropertyElement> Queryables => _queryable ??= Properties
+            .Where(x => x.IsDefined("Queryable"))
+            .ToList();
+
         private bool? _isQueryable;
         /// <summary>
         /// 是否具有分页查询定义。
         /// </summary>
-        public bool IsQueryable => _isQueryable ??= (IsDefined("Queryable") || OrderBy.Count > 0);
+        public bool IsQueryable => _isQueryable ??= (Queryables.Count > 0 || Orderables.Count > 0);
 
-        private List<PropertyElement> _orderBy;
+        private List<PropertyElement> _orderable;
         /// <summary>
         /// 排序分页查询列表。
         /// </summary>
-        public List<PropertyElement> OrderBy => _orderBy ??= this.Select(x => x as PropertyElement)
-            .Where(e => e != null && e.IsPublic && e.IsGetAndSet && e.IsDefined("OrderBy"))
+        public List<PropertyElement> Orderables => _orderable ??= Properties
+            .Where(x => x.IsDefined("Orderable"))
             .ToList();
 
         /// <summary>

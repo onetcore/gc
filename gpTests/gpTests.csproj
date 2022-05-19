@@ -57,7 +57,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="Generators\CSharpFileTests.cs" />
-    <Content Include="Professions\ActorProfession.txt" />
+    <Content Include="Professions\Profession.txt" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

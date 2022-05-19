@@ -59,7 +59,7 @@ namespace gp.Transfers
         private void SaveIndex(string path, string @namespace, string area, bool overwrite)
         {
             var name = Entity.Comment;
-            var orderable = Entity.BaseTypes.Contains("IOrderable");
+            var movable = Entity.Properties.Any(x => x.IsDefined("Movable") == true);
             var builder = new StringBuilder();
             builder.AppendFormat(@"@page
 @model IndexModel
@@ -71,8 +71,7 @@ namespace gp.Transfers
 
 ", name, Entity.Name.ToLower(), area.ToLower());
 
-            builder.Append(@"
-<div class=""card data-list"">
+            builder.Append(@"<div class=""card data-list"">
     <div class=""card-header toolbar"">");
             if (Entity.IsQueryable)
                 builder.AppendFormat(@"
@@ -83,7 +82,7 @@ namespace gp.Transfers
         <div class=""actions"">
             <gt:action-group>
                 <gt:action typeof=""Add"" asp-page=""./edit""></gt:action>
-                <gt:action typeof=""Delete"" confirm=""你确定要删除所选择{0}吗？"" asp-page-handler=""Delete""></gt:action>
+                <gt:action typeof=""Delete"" confirm=""你确定要删除所选择{0}吗？""></gt:action>
             </gt:action-group>
         </div>
     </div>
@@ -113,12 +112,12 @@ namespace gp.Transfers
                 }}
             </tbody>
         </table>
-", name, orderable ? " class=\"fl-hide\"" : "", orderable ? @"
+", name, movable ? " class=\"fl-hide\"" : "", movable ? @"
                                 <gt:action typeof=""MoveUp"" asp-route-id=""@item.Id""></gt:action>
                                 <gt:action typeof=""MoveDown"" asp-route-id=""@item.Id""></gt:action>" : "");
             if (Entity.IsQueryable)
                 builder.AppendLine(@"        <gt:page asp-route-name=""@Model.Query!.Name"" data=""@Model.Items""></gt:page>");
-            builder.AppendLine(@" </div>
+            builder.AppendLine(@"     </div>
 </div>
 ");
             Save(path, builder, overwrite);
@@ -177,7 +176,7 @@ Entity.IsQueryable ? "Page" : "");
         public {0}Query? Query {{ get; set; }}", Entity.Name);
             }
 
-            if (orderable)
+            if (movable)
             {
                 builder.AppendFormat(@"
 
@@ -223,27 +222,59 @@ Entity.IsQueryable ? "Page" : "");
 <form method=""post"">
     <input type=""hidden"" asp-for=""Input!.Id"" />
 ", name);
-            foreach (var filed in Entity)
+            foreach (var property in Entity.Properties.Where(x => !x.IsDefined("NotUpdated")))
             {
-                if (filed is PropertyElement property && property.Name != "Id" && property.IsGetAndSet)
-                {
-                    if (property.Name == "Description")
-                        builder.AppendFormat(@"    <div class=""mb-3"">
+                if (property.Name == "Id")
+                    continue;
+
+                var validation = property.IsDefined("NotNull") ? @$"
+        <span class=""text-danger"" asp-validation-for=""Input!.{property.Name}""></span>" : null;
+                if (property.Name == "Description")
+                    builder.AppendFormat(@"    <div class=""mb-3"">
         <label class=""form-label"">{0}</label>
-        <textarea asp-for=""Input!.Description"" class=""form-control"" rows=""5""></textarea>
+        <textarea asp-for=""Input!.Description"" class=""form-control"" rows=""5""></textarea>{1}
     </div>
-", property.Comment);
-                    else
-                        builder.AppendFormat(@"    <div class=""mb-3"">
+", property.Comment, validation);
+                else
+                    builder.AppendFormat(@"    <div class=""mb-3"">
         <label class=""form-label"">{1}</label>
-        <input asp-for=""Input!.{0}"" class=""form-control"" />
-        <span class=""text-danger"" asp-validation-for=""Input!.{0}""></span>
+        <input asp-for=""Input!.{0}"" class=""form-control"" />{2}
     </div>
-", property.Name, property.Comment);
-                }
+", property.Name, property.Comment, validation);
             }
             builder.AppendLine("</form>");
             Save(path, builder, overwrite);
+
+            var validSave = new StringBuilder();
+            foreach (var field in Entity.Properties.Where(x => x.IsDefined("NotNull")))
+            {
+                validSave.AppendFormat(@"
+            if (string.IsNullOrEmpty(Input!.{0}))
+            {{
+                ModelState.AddModelError(""Input.{0}"", ""{1}不能为空！"");
+                isValid = false;
+            }}
+", field.Name, field.Comment);
+            }
+            var manager = char.ToLower(Entity.Name[0]) + Entity.Name.Substring(1);
+            var display = Entity.Contains("Name") ? "Input.Name!" : $"\"{Entity.Comment}\"";
+            if (validSave.Length > 0)
+            {
+                validSave.Insert(0, "var isValid = true;");
+                validSave.Append(@$"
+            if (isValid)
+            {{
+                var result = await _{manager}Manager.SaveAsync(Input);
+                return Json(result, {display});
+            }}
+
+            return Error();");
+            }
+            else
+            {
+                validSave.Append(@$"            var result = await _{manager}Manager.SaveAsync(Input);
+            return Json(result, {display});");
+            }
 
             builder = new StringBuilder();
             builder.AppendFormat(@"using Microsoft.AspNetCore.Mvc;
@@ -265,9 +296,12 @@ namespace {3}
 
         public async Task<IActionResult> OnGet(int id)
         {{
-            Input = await _{4}Manager.FindAsync(id);
-            if (id > 0 && Input == null)
-                return NotFound();
+            if (id > 0)
+            {{
+                Input = await _{4}Manager.FindAsync(id);
+                if (Input == null)
+                    return NotFound();
+            }}
             return Page();
         }}
 
@@ -279,24 +313,11 @@ namespace {3}
 
         public async Task<IActionResult> OnPost()
         {{
-            var isValid = true;
-            if (string.IsNullOrEmpty(Input!.Name))
-            {{
-                ModelState.AddModelError(""Input.Name"", ""名称不能为空！"");
-                isValid = false;
-            }}
-
-            if (isValid)
-            {{
-                var result = await _{4}Manager.SaveAsync(Input);
-                return Json(result, Input.Name!);
-            }}
-
-            return Error();
+            {5}
         }}
     }}
 }}
-", Entity.Comment, Entity.Namespace, Entity.Name, @namespace, char.ToLower(Entity.Name[0]) + Entity.Name.Substring(1));
+", Entity.Comment, Entity.Namespace, Entity.Name, @namespace, manager, validSave);
             Save(path + ".cs", builder, overwrite);
         }
 
@@ -330,19 +351,37 @@ namespace {3}
 
             builder.Append(icomment);
             builder.AppendFormat("    public class {0}Query : ", Entity.Name);
-            if (Entity.OrderBy.Count > 0)
+            if (Entity.Orderables.Count > 0)
                 builder.AppendFormat("OrderableQueryBase<{0}, {0}Query.OrderBy>", Entity.Name);
             else
                 builder.AppendFormat("QueryBase<{0}>", Entity.Name);
             builder.AppendLine().AppendLine("    {");
 
-            var named = Entity.Contains("Name");
-            if (named)
+            var init = new StringBuilder();
+            foreach (var property in Entity.Queryables)
             {
-                builder.AppendLine(@"        /// <summary>
-        /// 名称。
+                var name = property.Name;
+                var attribute = property.GetAttribute("Queryable");
+                if (attribute.Count > 0)
+                {
+                    name = attribute[0].ToString().Trim('"', ' ');
+                    name = char.ToUpper(name[0]) + name.Substring(1);
+                }
+                builder.AppendFormat(@"        /// <summary>
+        /// {0}。
         /// </summary>
-        public string? Name { get; set; }").AppendLine();
+        public {2} {1} {{ get; set; }}
+", property.Comment, name, property.MemberType).AppendLine();
+
+                if (property.MemberType.StartsWith("string", System.StringComparison.OrdinalIgnoreCase))
+                    init.AppendLine(@$"            if (!string.IsNullOrEmpty({name}))
+                context.Where(x => x.{property.Name}!.Contains({name}));");
+                else if (property.MemberType.EndsWith("?"))
+                    init.AppendLine(@$"            if ({name} != null)
+                context.Where(x => x.{property.Name} == {name});");
+                else
+                    init.AppendLine(@$"            if ({name} > 0)
+                context.Where(x => x.{property.Name} == {name});");
             }
 
             if (tagable)
@@ -360,11 +399,7 @@ namespace {3}
         protected override void Init(IQueryContext<{0}> context)
         {{
             base.Init(context);", Entity.Name).AppendLine();
-            if (named)
-            {
-                builder.AppendLine(@"            if (!string.IsNullOrEmpty(Name))
-                context.Where(x => x.Name!.Contains(Name));");
-            }
+            builder.Append(init.ToString());
             if (tagable)
             {
                 builder.AppendFormat(@"            if (TagIds?.Length > 0)
@@ -372,7 +407,7 @@ namespace {3}
             }
             builder.AppendLine("        }");
 
-            if (Entity.OrderBy.Count > 0)
+            if (Entity.Orderables.Count > 0)
             {
                 builder.AppendLine();
                 builder.AppendLine(@"        /// <summary>
@@ -380,7 +415,7 @@ namespace {3}
         /// </summary>
         public enum OrderBy
         {");
-                foreach (var property in Entity.OrderBy)
+                foreach (var property in Entity.Orderables)
                 {
                     builder.AppendFormat(@"            /// <summary>
             /// {0}。

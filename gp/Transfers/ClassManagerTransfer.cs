@@ -50,14 +50,26 @@ namespace gp.Transfers
             builder.Append("namespace ").AppendLine(ns).AppendLine("{");
             foreach (var entity in Entities)
             {
-                // using
-                if (entity.BaseTypes.Contains("IIdObject") || !string.IsNullOrEmpty(idType = entity.BaseTypes
-                   .SingleOrDefault(x => x.StartsWith("IdObject<"))?.Substring(9).Trim(' ', '>')))
+                // movable
+                var movables = entity.Select(x => x as PropertyElement).Where(x => x != null && x.IsDefined("Movable")).ToList();
+                PropertyElement move = null;
+                var expressions = new List<string>();
+                foreach (var item in entity)
                 {
-                    usings.AppendLine("using Gentings.Extensions;");
-                    entityType = EntityType.IdObject;
+                    if (item is PropertyElement property && property.IsPublic && property.IsGetAndSet)
+                    {
+                        var attribute = property.GetAttribute("Movable");
+                        if (attribute == null)
+                            continue;
+                        if (attribute.Count == 0 || attribute[0] is bool ex && !ex)
+                            move ??= property;
+                        else
+                            expressions.Add($"x.{property.Name} = model.{property.Name}");
+                    }
                 }
-                else if (entity.BaseTypes.Contains("ICachableIdObject") || !string.IsNullOrEmpty(idType = entity.BaseTypes
+                var expression = expressions.Count > 0 ? "x => " + string.Join(" && ", expressions) : "null";
+                // using
+                if (entity.BaseTypes.Contains("ICachableIdObject") || !string.IsNullOrEmpty(idType = entity.BaseTypes
                    .SingleOrDefault(x => x.StartsWith("ICachableIdObject<"))?.Substring(18).Trim(' ', '>')))
                 {
                     usings.AppendLine("using Gentings.Extensions;");
@@ -68,6 +80,12 @@ namespace gp.Transfers
                              .SingleOrDefault(x => x.StartsWith("ISiteIdObject<"))?.Substring(14).Trim(' ', '>')))
                 {
                     usings.AppendLine("using Gentings.Saas;");
+                    entityType = EntityType.IdObject;
+                }
+                else if (entity.BaseTypes.Contains("IIdObject") || !string.IsNullOrEmpty(idType = entity.BaseTypes
+                   .SingleOrDefault(x => x.StartsWith("IdObject<"))?.Substring(9).Trim(' ', '>')))
+                {
+                    usings.AppendLine("using Gentings.Extensions;");
                     entityType = EntityType.IdObject;
                 }
                 else if (entity.BaseTypes.Contains("CategoryBase"))
@@ -176,7 +194,7 @@ namespace gp.Transfers
                 builder.AppendLine("ISingletonService");
                 builder.AppendLine("    {");
                 // 排序
-                if (entity.BaseTypes.Contains("IOrderable"))
+                if (move != null)
                 {
                     builder.AppendLine(@"        /// <summary>
         /// 上移一个位置。
@@ -273,20 +291,20 @@ namespace gp.Transfers
                 builder.AppendLine("        {");
                 builder.AppendLine("        }");
                 // 排序
-                if (entity.BaseTypes.Contains("IOrderable"))
+                if (move != null)
                 {
-                    builder.AppendLine(@"
+                    builder.AppendFormat(@"
         /// <summary>
         /// 添加实例。
         /// </summary>
         /// <param name=""model"">添加对象。</param>
         /// <returns>返回添加结果。</returns>
-        public override bool Create(" + entity.Name + @" model)
-        {
+        public override bool Create({0} model)
+        {{
             if (model.Id == 0)
-                model.Order = 1 + Context.Max(x => x.Order, null);
+                model.{1} = 1 + Context.Max(x => x.{1}, {2});
             return base.Create(model);
-        }
+        }}
 
         /// <summary>
         /// 添加实例。
@@ -294,12 +312,12 @@ namespace gp.Transfers
         /// <param name=""model"">添加对象。</param>
         /// <param name=""cancellationToken"">取消标识。</param>
         /// <returns>返回添加结果。</returns>
-        public override async Task<bool> CreateAsync(" + entity.Name + @" model, CancellationToken cancellationToken = default)
-        {
+        public override async Task<bool> CreateAsync({0} model, CancellationToken cancellationToken = default)
+        {{
             if (model.Id == 0)
-                model.Order = 1 + await Context.MaxAsync(x => x.Order, null, cancellationToken);
+                model.{1} = 1 + await Context.MaxAsync(x => x.{1}, {2}, cancellationToken);
             return await base.CreateAsync(model, cancellationToken);
-        }
+        }}
 
         /// <summary>
         /// 上移一个位置。
@@ -307,15 +325,15 @@ namespace gp.Transfers
         /// <param name=""id"">当前页面Id。</param>
         /// <returns>返回移动结果。</returns>
         public virtual bool MoveUp(int id)
-        {
+        {{
             var model = Context.Find(x => x.Id == id);
             if (model == null)
                 return false;
-            if (Context.MoveUp(id, x => x.Order, null, false))
+            if (Context.MoveUp(id, x => x.{1}, {2}, false))
                 return true;
 
             return false;
-        }
+        }}
 
         /// <summary>
         /// 上移一个位置。
@@ -323,15 +341,15 @@ namespace gp.Transfers
         /// <param name=""id"">当前页面Id。</param>
         /// <returns>返回移动结果。</returns>
         public virtual async Task<bool> MoveUpAsync(int id)
-        {
+        {{
             var model = await Context.FindAsync(x => x.Id == id);
             if (model == null)
                 return false;
-            if (await Context.MoveUpAsync(id, x => x.Order, null, false))
+            if (await Context.MoveUpAsync(id, x => x.{1}, {2}, false))
                 return true;
 
             return false;
-        }
+        }}
 
         /// <summary>
         /// 下移一个位置。
@@ -339,15 +357,15 @@ namespace gp.Transfers
         /// <param name=""id"">当前页面Id。</param>
         /// <returns>返回移动结果。</returns>
         public virtual bool MoveDown(int id)
-        {
+        {{
             var model = Context.Find(x => x.Id == id);
             if (model == null)
                 return false;
-            if (Context.MoveDown(id, x => x.Order, null, false))
+            if (Context.MoveDown(id, x => x.{1}, {2}, false))
                 return true;
 
             return false;
-        }
+        }}
 
         /// <summary>
         /// 下移一个位置。
@@ -355,16 +373,16 @@ namespace gp.Transfers
         /// <param name=""id"">当前页面Id。</param>
         /// <returns>返回移动结果。</returns>
         public virtual async Task<bool> MoveDownAsync(int id)
-        {
+        {{
             var model = await Context.FindAsync(x => x.Id == id);
             if (model == null)
                 return false;
-            if (await Context.MoveDownAsync(id, x => x.Order, null, false))
+            if (await Context.MoveDownAsync(id, x => x.{1}, {2}, false))
                 return true;
 
             return false;
-        }
-");
+        }}
+", entity.Name, move.Name, expression);
                 }
                 builder.AppendLine("    }");
             }

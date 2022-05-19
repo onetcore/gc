@@ -18,6 +18,7 @@ namespace gp
         {
             Name = name.Trim();
             Declarations = declarations;
+            MemberType = declarations[declarations.Count - 1];
             IsPublic = declarations.Any(x => x == "public");
         }
 
@@ -34,7 +35,7 @@ namespace gp
         /// <summary>
         /// 成员类型。
         /// </summary>
-        public string MemberType => Declarations[Declarations.Count - 1];
+        public string MemberType { get; }
 
         /// <summary>
         /// 是否为公共。

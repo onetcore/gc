@@ -58,6 +58,7 @@
     <Compile Include="CodeDom\IndexElement.cs" />
     <Compile Include="CodeDom\MemberElement.cs" />
     <Compile Include="CodeDom\SourceExtensions.cs" />
+    <Compile Include="CodeDom\StringExtensions.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
