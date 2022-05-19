@@ -64,7 +64,7 @@ namespace gp.Transfers
                         if (attribute.Count == 0 || attribute[0] is bool ex && !ex)
                             move ??= property;
                         else
-                            expressions.Add($"x.{property.Name} = model.{property.Name}");
+                            expressions.Add($"x.{property.Name} == model.{property.Name}");
                     }
                 }
                 var expression = expressions.Count > 0 ? "x => " + string.Join(" && ", expressions) : "null";
@@ -301,7 +301,7 @@ namespace gp.Transfers
         /// <returns>返回添加结果。</returns>
         public override bool Create({0} model)
         {{
-            if (model.Id == 0)
+            if (model.{1} == 0)
                 model.{1} = 1 + Context.Max(x => x.{1}, {2});
             return base.Create(model);
         }}
@@ -314,7 +314,7 @@ namespace gp.Transfers
         /// <returns>返回添加结果。</returns>
         public override async Task<bool> CreateAsync({0} model, CancellationToken cancellationToken = default)
         {{
-            if (model.Id == 0)
+            if (model.{1} == 0)
                 model.{1} = 1 + await Context.MaxAsync(x => x.{1}, {2}, cancellationToken);
             return await base.CreateAsync(model, cancellationToken);
         }}
